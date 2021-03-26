@@ -106,9 +106,28 @@ namespace ShapeBatch
 				throw new InvalidOperationException("Line() must be called between Begin() and End()");
 
 			// Use the width-checking helper to handle this line, then progress depth
-			BatchWideLine(startPos, endPos, 1.0f, color);
+			BatchWideLine(startPos, endPos, 1.0f, color, color);
 			NextDepth();
 		}
+
+
+		/// <summary>
+		/// Draws a 1-pixel-wide line
+		/// </summary>
+		/// <param name="startPos">The starting position</param>
+		/// <param name="endPos">The ending position</param>
+		/// <param name="startColor">The color of the line at the starting position</param>
+		/// <param name="endColor">The color of the line at the ending position</param>
+		public static void Line(Vector2 startPos, Vector2 endPos, Color startColor, Color endColor)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Line() must be called between Begin() and End()");
+
+			// Use the width-checking helper to handle this line, then progress depth
+			BatchWideLine(startPos, endPos, 1.0f, startColor, endColor);
+			NextDepth();
+		}
+
 
 		/// <summary>
 		/// Draws a line
@@ -123,7 +142,26 @@ namespace ShapeBatch
 				throw new InvalidOperationException("Line() must be called between Begin() and End()");
 
 			// Use the width-checking helper to handle this line, then progress depth
-			BatchWideLine(startPos, endPos, width, color);
+			BatchWideLine(startPos, endPos, width, color, color);
+			NextDepth();
+		}
+
+
+		/// <summary>
+		/// Draws a line
+		/// </summary>
+		/// <param name="startPos">The starting position</param>
+		/// <param name="endPos">The ending position</param>
+		/// <param name="width">The width of the line (minimum 1 pixel)</param>
+		/// <param name="startColor">The color of the line at the starting position</param>
+		/// <param name="endColor">The color of the line at the ending position</param>
+		public static void Line(Vector2 startPos, Vector2 endPos, float width, Color startColor, Color endColor)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Line() must be called between Begin() and End()");
+
+			// Use the width-checking helper to handle this line, then progress depth
+			BatchWideLine(startPos, endPos, width, startColor, endColor);
 			NextDepth();
 		}
 
@@ -147,6 +185,25 @@ namespace ShapeBatch
 
 
 		/// <summary>
+		/// Draws a 1-pixel-wide line.  This overload returns the end position of the line.
+		/// </summary>
+		/// <param name="startPos">The starting position of the line</param>
+		/// <param name="length">The length of the line</param>
+		/// <param name="angle">The angle of the line, in radians, measured from the positive x axis</param>
+		/// <param name="startColor">The color of the line at the starting position</param>
+		/// <param name="endColor">The color of the line at the ending position</param>
+		/// <returns>The end position of the line.</returns>
+		public static Vector2 Line(Vector2 startPos, float length, float angle, Color startColor, Color endColor)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Line() must be called between Begin() and End()");
+
+			// Use the overload that handles the width, assuming a width of 1.0
+			return Line(startPos, length, angle, 1.0f, startColor, endColor);
+		}
+
+
+		/// <summary>
 		/// Draws a line.  This overload returns the end position of the line.
 		/// </summary>
 		/// <param name="startPos">The starting position of the line</param>
@@ -165,7 +222,35 @@ namespace ShapeBatch
 			endPos += new Vector2(MathF.Cos(-angle), MathF.Sin(-angle)) * length;
 
 			// Use the width-checking helper to handle this line, then progress depth
-			BatchWideLine(startPos, endPos, width, color);
+			BatchWideLine(startPos, endPos, width, color, color);
+			NextDepth();
+
+			// Return the ending position in the event that's useful to the caller
+			return endPos;
+		}
+
+
+		/// <summary>
+		/// Draws a line.  This overload returns the end position of the line.
+		/// </summary>
+		/// <param name="startPos">The starting position of the line</param>
+		/// <param name="length">The length of the line</param>
+		/// <param name="angle">The angle of the line, in radians, measured from the positive x axis</param>
+		/// <param name="width">The width of the line (minimum 1 pixel)</param>
+		/// <param name="startColor">The color of the line at the starting position</param>
+		/// <param name="endColor">The color of the line at the ending position</param>
+		/// <returns>The end position of the line.</returns>
+		public static Vector2 Line(Vector2 startPos, float length, float angle, float width, Color startColor, Color endColor)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Line() must be called between Begin() and End()");
+
+			// Calculate the ending position as an offset from the starting position
+			Vector2 endPos = startPos;
+			endPos += new Vector2(MathF.Cos(-angle), MathF.Sin(-angle)) * length;
+
+			// Use the width-checking helper to handle this line, then progress depth
+			BatchWideLine(startPos, endPos, width, startColor, endColor);
 			NextDepth();
 
 			// Return the ending position in the event that's useful to the caller
@@ -193,8 +278,38 @@ namespace ShapeBatch
 			Vector2 bottomLeft = new Vector2(x, y + height);
 
 			// Create the polygons
-			BatchPolygon(topLeft, bottomRight, bottomLeft, color);
-			BatchPolygon(topLeft, topRight, bottomRight, color);
+			BatchPolygon(topLeft, bottomRight, bottomLeft, color, color, color);
+			BatchPolygon(topLeft, topRight, bottomRight, color, color, color);
+
+			NextDepth();
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) box
+		/// </summary>
+		/// <param name="x">The x position of the top left corner of the box</param>
+		/// <param name="y">The y position of the top left corner of the box</param>
+		/// <param name="width">The width of the box</param>
+		/// <param name="height">The height of the box</param>
+		/// <param name="colorTopLeft">The color of the top left corner of the box</param>
+		/// <param name="colorTopRight">The color of the top right corner of the box</param>
+		/// <param name="colorBottomRight">The color of the bottom right corner of the box</param>
+		/// <param name="colorBottomLeft">The color of the bottom left corner of the box</param>
+		public static void Box(float x, float y, float width, float height, Color colorTopLeft, Color colorTopRight, Color colorBottomRight, Color colorBottomLeft)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Box() must be called between Begin() and End()");
+
+			// Create the corners
+			Vector2 topLeft = new Vector2(x, y);
+			Vector2 topRight = new Vector2(x + width, y);
+			Vector2 bottomRight = new Vector2(x + width, y + height);
+			Vector2 bottomLeft = new Vector2(x, y + height);
+
+			// Create the polygons
+			BatchPolygon(topLeft, bottomRight, bottomLeft, colorTopLeft, colorBottomRight, colorBottomLeft);
+			BatchPolygon(topLeft, topRight, bottomRight, colorTopLeft, colorTopRight, colorBottomRight);
 
 			NextDepth();
 		}
@@ -211,6 +326,23 @@ namespace ShapeBatch
 				throw new InvalidOperationException("Box() must be called between Begin() and End()");
 
 			Box(rect.X, rect.Y, rect.Width, rect.Height, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) box
+		/// </summary>
+		/// <param name="rect">The rectangle specifying the box's position and size</param>
+		/// <param name="colorTopLeft">The color of the top left corner of the box</param>
+		/// <param name="colorTopRight">The color of the top right corner of the box</param>
+		/// <param name="colorBottomRight">The color of the bottom right corner of the box</param>
+		/// <param name="colorBottomLeft">The color of the bottom left corner of the box</param>
+		public static void Box(Rectangle rect, Color colorTopLeft, Color colorTopRight, Color colorBottomRight, Color colorBottomLeft)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Box() must be called between Begin() and End()");
+
+			Box(rect.X, rect.Y, rect.Width, rect.Height, colorTopLeft, colorTopRight, colorBottomRight, colorBottomLeft);
 		}
 
 
@@ -234,10 +366,43 @@ namespace ShapeBatch
 			Vector2 bottomLeft = new Vector2(x, y + height + 1); // This corner always rasterizes incorrectly, so adjust by 1 pixel
 
 			// Draw the four lines that make up the box
-			BatchLine(topLeft, topRight, color);         // Top
-			BatchLine(topRight, bottomRight, color);     // Right
-			BatchLine(bottomRight, bottomLeft, color);   // Bottom
-			BatchLine(bottomLeft, topLeft, color);       // Left
+			BatchLine(topLeft, topRight, color, color);         // Top
+			BatchLine(topRight, bottomRight, color, color);     // Right
+			BatchLine(bottomRight, bottomLeft, color, color);   // Bottom
+			BatchLine(bottomLeft, topLeft, color, color);       // Left
+
+			// Progress to the next depth
+			NextDepth();
+		}
+
+
+		/// <summary>
+		/// Draws the outline of a box
+		/// </summary>
+		/// <param name="x">The x position of the top left corner of the box</param>
+		/// <param name="y">The y position of the top left corner of the box</param>
+		/// <param name="width">The width of the box</param>
+		/// <param name="height">The height of the box</param>
+		/// <param name="colorTopLeft">The color of the top left corner of the box</param>
+		/// <param name="colorTopRight">The color of the top right corner of the box</param>
+		/// <param name="colorBottomRight">The color of the bottom right corner of the box</param>
+		/// <param name="colorBottomLeft">The color of the bottom left corner of the box</param>
+		public static void BoxOutline(float x, float y, float width, float height, Color colorTopLeft, Color colorTopRight, Color colorBottomRight, Color colorBottomLeft)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("BoxOutline() must be called between Begin() and End()");
+
+			// Create the corners
+			Vector2 topLeft = new Vector2(x, y);
+			Vector2 topRight = new Vector2(x + width, y);
+			Vector2 bottomRight = new Vector2(x + width, y + height);
+			Vector2 bottomLeft = new Vector2(x, y + height + 1); // This corner always rasterizes incorrectly, so adjust by 1 pixel
+
+			// Draw the four lines that make up the box
+			BatchLine(topLeft, topRight, colorTopLeft, colorTopRight);				// Top
+			BatchLine(topRight, bottomRight, colorTopRight, colorBottomRight);		// Right
+			BatchLine(bottomRight, bottomLeft, colorBottomRight, colorBottomLeft);	// Bottom
+			BatchLine(bottomLeft, topLeft, colorBottomLeft, colorTopLeft);			// Left
 
 			// Progress to the next depth
 			NextDepth();
@@ -260,6 +425,24 @@ namespace ShapeBatch
 
 
 		/// <summary>
+		/// Draws the outline of a box
+		/// </summary>
+		/// <param name="rect">The rectangle specifying the box's position and size</param>
+		/// <param name="colorTopLeft">The color of the top left corner of the box</param>
+		/// <param name="colorTopRight">The color of the top right corner of the box</param>
+		/// <param name="colorBottomRight">The color of the bottom right corner of the box</param>
+		/// <param name="colorBottomLeft">The color of the bottom left corner of the box</param>
+		public static void BoxOutline(Rectangle rect, Color colorTopLeft, Color colorTopRight, Color colorBottomRight, Color colorBottomLeft)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("BoxOutline() must be called between Begin() and End()");
+
+			// Decompose the rectangle and call the other overload
+			BoxOutline(rect.X, rect.Y, rect.Width, rect.Height, colorTopLeft, colorTopRight, colorBottomRight, colorBottomLeft);
+		}
+
+
+		/// <summary>
 		/// Draws a solid (filled-in) circle
 		/// </summary>
 		/// <param name="center">The position of the circle's center</param>
@@ -268,6 +451,25 @@ namespace ShapeBatch
 		/// <param name="rotation">The rotation of the circle (this is much more obvious with fewer segments)</param>
 		/// <param name="color">The color of the circle</param>
 		public static void Circle(Vector2 center, float radius, int segments, float rotation, Color color)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
+
+			// Call the overload that takes two colors
+			Circle(center, radius, segments, rotation, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) circle
+		/// </summary>
+		/// <param name="center">The position of the circle's center</param>
+		/// <param name="radius">The radius of the circle</param>
+		/// <param name="segments">The number of segments (triangles) that are used to fill in the circle.  Minimum of 3.</param>
+		/// <param name="rotation">The rotation of the circle (this is much more obvious with fewer segments)</param>
+		/// <param name="colorCenter">The color of the center of the circle</param>
+		/// <param name="colorEdge">The color of the edge of the circle</param>
+		public static void Circle(Vector2 center, float radius, int segments, float rotation, Color colorCenter, Color colorEdge)
 		{
 			if (!batchActive)
 				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
@@ -290,7 +492,7 @@ namespace ShapeBatch
 				Vector2 pos1 = center + new Vector2(MathF.Cos(a1), MathF.Sin(a1)) * radius;
 
 				// Each triangle shares the center position of the circle
-				BatchPolygon(center, pos0, pos1, color);
+				BatchPolygon(center, pos0, pos1, colorCenter, colorEdge, colorEdge);
 			}
 
 			// Progress to the next depth
@@ -310,7 +512,26 @@ namespace ShapeBatch
 			if (!batchActive)
 				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
 
-			Circle(center, radius, segments, 0.0f, color);
+			// Call the overload that takes a rotation
+			Circle(center, radius, segments, 0.0f, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) circle
+		/// </summary>
+		/// <param name="center">The position of the circle's center</param>
+		/// <param name="radius">The radius of the circle</param>
+		/// <param name="segments">The number of segments (triangles) that are used to fill in the circle.  Minimum of 3.</param>
+		/// <param name="colorCenter">The color of the center of the circle</param>
+		/// <param name="colorEdge">The color of the edge of the circle</param>
+		public static void Circle(Vector2 center, float radius, int segments, Color colorCenter, Color colorEdge)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
+
+			// Call the overload that takes a rotation
+			Circle(center, radius, segments, 0.0f, colorCenter, colorEdge);
 		}
 
 
@@ -326,11 +547,29 @@ namespace ShapeBatch
 			if (!batchActive)
 				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
 
+			// Call the overload that calculates the number of segments
+			Circle(center, radius, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) circle
+		/// </summary>
+		/// <param name="center">The position of the circle's center</param>
+		/// <param name="radius">The radius of the circle</param>
+		/// <param name="rotation">The rotation of the circle (this is much more obvious with fewer segments)</param>
+		/// <param name="colorCenter">The color of the center of the circle</param>
+		/// <param name="colorEdge">The color of the edge of the circle</param>
+		public static void Circle(Vector2 center, float radius, Color colorCenter, Color colorEdge)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Circle() must be called between Begin() and End()");
+
 			// Calculate an appropriate number of segments based on radius
 			float angle = MathF.Asin(DefaultCircleSegmentLength / radius);
 			int segments = (int)(MathF.PI * 2.0f / angle);
 
-			Circle(center, radius, segments, 0.0f, color);
+			Circle(center, radius, segments, 0.0f, colorCenter, colorEdge);
 		}
 
 
@@ -365,7 +604,7 @@ namespace ShapeBatch
 				Vector2 pos1 = center + new Vector2(MathF.Cos(a1), MathF.Sin(a1)) * radius;
 
 				// Batch a single line
-				BatchLine(pos0, pos1, color);
+				BatchLine(pos0, pos1, color, color);
 			}
 
 			// Progress to the next depth
@@ -420,6 +659,25 @@ namespace ShapeBatch
 			if (!batchActive)
 				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
 
+			// Call the overload that takes 3 colors
+			Triangle(p0, p1, p2, color, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) triangle
+		/// </summary>
+		/// <param name="p0">The position of the first vertex</param>
+		/// <param name="p1">The position of the second vertex</param>
+		/// <param name="p2">The position of the third vertex</param>
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		public static void Triangle(Vector2 p0, Vector2 p1, Vector2 p2, Color color0, Color color1, Color color2)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
+
 			// Need to make sure we're in clockwise winding order!
 
 			// Calculate vectors running down the edges of the triangle
@@ -434,11 +692,11 @@ namespace ShapeBatch
 			// if we need to swap the winding order of the vertices
 			if (cross.Z >= 0)
 			{
-				BatchPolygon(p0, p1, p2, color); // 0, 1, 2
+				BatchPolygon(p0, p1, p2, color0, color1, color2); // 0, 1, 2
 			}
 			else
 			{
-				BatchPolygon(p0, p2, p1, color); // 0, 2, 1
+				BatchPolygon(p0, p2, p1, color0, color2, color1); // 0, 2, 1
 			}
 
 			// Progress to the next depth
@@ -454,6 +712,25 @@ namespace ShapeBatch
 		/// <param name="rotation">The rotation of the triangle</param>
 		/// <param name="color">The color of the triangle</param>
 		public static void Triangle(Vector2 center, float height, float rotation, Color color)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
+
+			// Call the overload that takes 3 colors
+			Triangle(center, height, rotation, color, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) equilateral triangle
+		/// </summary>
+		/// <param name="center">The center of the triangle (equidistant from all three vertices)</param>
+		/// <param name="height">The height of the triangle as measued from the top vertex to the base</param>
+		/// <param name="rotation">The rotation of the triangle</param>
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		public static void Triangle(Vector2 center, float height, float rotation, Color color0, Color color1, Color color2)
 		{
 			if (!batchActive)
 				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
@@ -483,7 +760,7 @@ namespace ShapeBatch
 			Vector2 v2 = center + blOffset;
 
 			// Draw the triangle
-			Triangle(v0, v1, v2, color);
+			Triangle(v0, v1, v2, color0, color1, color2);
 		}
 
 
@@ -499,8 +776,25 @@ namespace ShapeBatch
 				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
 
 			// Draw the triangle using a default rotation
-			Triangle(center, height, 0.0f, color);
+			Triangle(center, height, 0.0f, color, color, color);
 		}
+
+
+		/// <summary>
+		/// Draws a solid (filled-in) equilateral triangle
+		/// </summary>
+		/// <param name="center">The center of the triangle (equidistant from all three vertices)</param>
+		/// <param name="height">The height of the triangle as measued from the top vertex to the base</param>
+		/// <param name="color">The color of the triangle</param>
+		public static void Triangle(Vector2 center, float height, Color color0, Color color1, Color color2)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("Triangle() must be called between Begin() and End()");
+
+			// Draw the triangle using a default rotation
+			Triangle(center, height, 0.0f, color0, color1, color2);
+		}
+
 
 		/// <summary>
 		/// Draws the outline of a triangle
@@ -514,10 +808,29 @@ namespace ShapeBatch
 			if (!batchActive)
 				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
 
+			// Call the overload that takes 3 colors
+			TriangleOutline(p0, p1, p2, color, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws the outline of a triangle
+		/// </summary>
+		/// <param name="p0">The position of the first vertex</param>
+		/// <param name="p1">The position of the second vertex</param>
+		/// <param name="p2">The position of the third vertex</param>
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		public static void TriangleOutline(Vector2 p0, Vector2 p1, Vector2 p2, Color color0, Color color1, Color color2)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
+
 			// Batch lines between the vertices
-			BatchLine(p0, p1, color);
-			BatchLine(p1, p2, color);
-			BatchLine(p2, p0, color);
+			BatchLine(p0, p1, color0, color1);
+			BatchLine(p1, p2, color1, color2);
+			BatchLine(p2, p0, color2, color0);
 
 			// Progress to the next depth
 			NextDepth();
@@ -532,6 +845,25 @@ namespace ShapeBatch
 		/// <param name="rotation">The rotation of the triangle</param>
 		/// <param name="color">The color of the triangle</param>
 		public static void TriangleOutline(Vector2 center, float height, float rotation, Color color)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
+
+			// Call the overload that takes 3 colors
+			TriangleOutline(center, height, rotation, color, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws the outline of a triangle
+		/// </summary>
+		/// <param name="center">The center of the triangle (equidistant from all three vertices)</param>
+		/// <param name="height">The height of the triangle as measued from the top vertex to the base</param>
+		/// <param name="rotation">The rotation of the triangle</param>
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		public static void TriangleOutline(Vector2 center, float height, float rotation, Color color0, Color color1, Color color2)
 		{
 			if (!batchActive)
 				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
@@ -561,9 +893,9 @@ namespace ShapeBatch
 			Vector2 v2 = center + blOffset;
 
 			// Batch lines between the vertices
-			BatchLine(v0, v1, color);
-			BatchLine(v1, v2, color);
-			BatchLine(v2, v0, color);
+			BatchLine(v0, v1, color0, color1);
+			BatchLine(v1, v2, color1, color2);
+			BatchLine(v2, v0, color2, color0);
 
 			// Progress to the next depth
 			NextDepth();
@@ -582,7 +914,25 @@ namespace ShapeBatch
 				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
 
 			// Draw the triangle using a default rotation
-			TriangleOutline(center, height, 0.0f, color);
+			TriangleOutline(center, height, 0.0f, color, color, color);
+		}
+
+
+		/// <summary>
+		/// Draws the outline of a triangle
+		/// </summary>
+		/// <param name="center">The center of the triangle (equidistant from all three vertices)</param>
+		/// <param name="height">The height of the triangle as measued from the top vertex to the base</param>
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		public static void TriangleOutline(Vector2 center, float height, Color color0, Color color1, Color color2)
+		{
+			if (!batchActive)
+				throw new InvalidOperationException("TriangleOutline() must be called between Begin() and End()");
+
+			// Draw the triangle using a default rotation
+			TriangleOutline(center, height, 0.0f, color0, color1, color2);
 		}
 
 
@@ -592,8 +942,9 @@ namespace ShapeBatch
 		/// </summary>
 		/// <param name="p0">The starting position</param>
 		/// <param name="p1">The ending position</param>
-		/// <param name="color">The color of the line</param>
-		private static void BatchLine(Vector2 p0, Vector2 p1, Color color)
+		/// <param name="color0">The color of the line at the starting position</param>
+		/// <param name="color1">The color of the line at the ending position</param>
+		private static void BatchLine(Vector2 p0, Vector2 p1, Color color0, Color color1)
 		{
 			// Any need to flush?
 			if (lines.Count / 2 >= PrimitivesPerBatch)
@@ -604,8 +955,8 @@ namespace ShapeBatch
 			}
 
 			// Add the vertices to the line list
-			lines.Add(new VertexPositionColor(PixelsToNDCs(p0, currentDepth), color));
-			lines.Add(new VertexPositionColor(PixelsToNDCs(p1, currentDepth), color));
+			lines.Add(new VertexPositionColor(PixelsToNDCs(p0, currentDepth), color0));
+			lines.Add(new VertexPositionColor(PixelsToNDCs(p1, currentDepth), color1));
 		}
 
 
@@ -616,8 +967,9 @@ namespace ShapeBatch
 		/// <param name="p0">The starting position</param>
 		/// <param name="p1">The ending position</param>
 		/// <param name="width">The width of the line (minimum 1)</param>
-		/// <param name="color">The color of the line</param>
-		private static void BatchWideLine(Vector2 p0, Vector2 p1, float width, Color color)
+		/// <param name="color0">The color of the line at the starting position</param>
+		/// <param name="color1">The color of the line at the ending position</param>
+		private static void BatchWideLine(Vector2 p0, Vector2 p1, float width, Color color0, Color color1)
 		{
 			// Minimum of 1 on the width
 			width = MathF.Max(1.0f, width);
@@ -626,7 +978,7 @@ namespace ShapeBatch
 			if (width == 1)
 			{
 				// Yup, just batch a simple line
-				BatchLine(p0, p1, color);
+				BatchLine(p0, p1, color0, color1);
 			}
 			else
 			{
@@ -645,8 +997,8 @@ namespace ShapeBatch
 				Vector2 bottomLeft = p1 - halfWidthPerp;
 
 				// Create the polygons (these should always have the correct winding order!)
-				BatchPolygon(topLeft, bottomRight, bottomLeft, color);
-				BatchPolygon(topLeft, topRight, bottomRight, color);
+				BatchPolygon(topLeft, bottomRight, bottomLeft, color0, color1, color1);
+				BatchPolygon(topLeft, topRight, bottomRight, color0, color0, color1);
 			}
 		}
 
@@ -658,8 +1010,10 @@ namespace ShapeBatch
 		/// <param name="p0">First vertex position</param>
 		/// <param name="p1">Second vertex position</param>
 		/// <param name="p2">Third vertex position</param>
-		/// <param name="color">The color of the triangle</param>
-		private static void BatchPolygon(Vector2 p0, Vector2 p1, Vector2 p2, Color color)
+		/// <param name="color0">The color of the first vertex</param>
+		/// <param name="color1">The color of the second vertex</param>
+		/// <param name="color2">The color of the third vertex</param>
+		private static void BatchPolygon(Vector2 p0, Vector2 p1, Vector2 p2, Color color0, Color color1, Color color2)
 		{
 			// Any need to flush?
 			if (polygons.Count / 3 >= PrimitivesPerBatch)
@@ -670,9 +1024,9 @@ namespace ShapeBatch
 			}
 
 			// Add the vertices to the polygon list
-			polygons.Add(new VertexPositionColor(PixelsToNDCs(p0, currentDepth), color));
-			polygons.Add(new VertexPositionColor(PixelsToNDCs(p1, currentDepth), color));
-			polygons.Add(new VertexPositionColor(PixelsToNDCs(p2, currentDepth), color));
+			polygons.Add(new VertexPositionColor(PixelsToNDCs(p0, currentDepth), color0));
+			polygons.Add(new VertexPositionColor(PixelsToNDCs(p1, currentDepth), color1));
+			polygons.Add(new VertexPositionColor(PixelsToNDCs(p2, currentDepth), color2));
 		}
 
 
