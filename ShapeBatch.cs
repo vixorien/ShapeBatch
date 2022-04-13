@@ -1,8 +1,16 @@
-﻿using System;
+// -----------------------------------------
+// ShapeBatch
+//
+// Copyright (c) Chris Cascioli
+// Licensed under the MIT License
+//
+// https://github.com/vixorien/shapebatch
+// -----------------------------------------
+
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 
 namespace ShapeBatch
 {
