@@ -3,8 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using System;
+using ShapeUtils;
 
-namespace ShapeBatch
+namespace ShapeBatchDemo
 {
 	public class Game1 : Game
 	{

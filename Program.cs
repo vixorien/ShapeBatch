@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ShapeBatch
+namespace ShapeBatchDemo
 {
 	public static class Program
 	{

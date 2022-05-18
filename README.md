@@ -2,7 +2,7 @@
 A simple 2D primitive shape drawing system for MonoGame
 
 ## Setup
-Copy the ShapeBatch.cs file into your project.  The ShapeBatch static class is in the ShapeBatch namespace.
+Copy the ShapeBatch.cs file into your project.  The ShapeBatch static class is in the ShapeUtils namespace.
 
 ## Basic Usage
 Use ShapeBatch during the Draw() method in MonoGame
