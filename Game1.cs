@@ -1,8 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
 using System;
+
 using ShapeUtils;
 
 namespace ShapeBatchDemo
@@ -40,7 +40,7 @@ namespace ShapeBatchDemo
 		protected override void Draw(GameTime gameTime)
 		{
 			GraphicsDevice.Clear(Color.Black);
-			
+
 			// Begin a shape batch
 			ShapeBatch.Begin(GraphicsDevice);
 
@@ -49,7 +49,7 @@ namespace ShapeBatchDemo
 
 			// End the shape batch
 			ShapeBatch.End();
-			
+
 			base.Draw(gameTime);
 		}
 
