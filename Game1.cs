@@ -15,6 +15,8 @@ namespace ShapeBatchDemo
 		public Game1()
 		{
 			_graphics = new GraphicsDeviceManager(this);
+			ShapeBatch.EnableAntialiasing(_graphics);
+			
 			Content.RootDirectory = "Content";
 			IsMouseVisible = true;
 		}

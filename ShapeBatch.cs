@@ -43,6 +43,16 @@ namespace ShapeUtils
 		// The default length for the segments (lines or triangles) of a circle
 		private const float DefaultCircleSegmentLength = 3.0f;
 
+		// The maximum multisample count ShapeBatch supports.  Note that while
+		// this probably SHOULD be 32, as of MonoGame 3.8.1, OpenGL projects 
+		// don't support values higher than 16.
+		private const int MaxMultisampleCount = 16;
+
+		// The default multisample count for antialiasing.  This can be adjusted
+		// when enabling antialiasing.
+		private static int MultisampleCount = MaxMultisampleCount;
+
+
 		/// <summary>
 		/// Internal initialize function that is called any time
 		/// a batch is started.  Only performs initialization 
@@ -65,6 +75,66 @@ namespace ShapeUtils
 			// Ready to go, batch isn't active yet
 			initialized = true;
 			batchActive = false;
+		}
+
+		/// <summary>
+		/// Enables antialiasing.  
+		/// 
+		/// Note, this MUST be called from the Game class's constructor, since
+		/// antialiasing settings must be configured before the GraphicsDevice object is actually
+		/// created by the GraphicsDeviceManager.
+		/// </summary>
+		/// <param name="graphicsDeviceManager">Graphics Device Manager from the Game class</param>
+		/// <exception cref="InvalidOperationException">Thrown if called after the GraphicsDevice object has been created.</exception>
+		public static void EnableAntialiasing(GraphicsDeviceManager graphicsDeviceManager)
+		{
+			EnableAntialiasing(graphicsDeviceManager, 16);
+		}
+
+
+		/// <summary>
+		/// Enables antialiasing.  
+		/// 
+		/// Note, this MUST be called from the Game class's constructor, since
+		/// antialiasing settings must be configured before the GraphicsDevice object is actually
+		/// created by the GraphicsDeviceManager.
+		/// </summary>
+		/// <param name="graphicsDeviceManager">Graphics Device Manager from the Game class</param>
+		/// <param name="multisampleCount">Quality of antialiasing.  Valid values are 1 through 16.</param>
+		/// <exception cref="InvalidOperationException">Thrown if called after the GraphicsDevice object has been created.</exception>
+		/// <exception cref="ArgumentException">Thrown if the multisample count is invalid.</exception>
+		public static void EnableAntialiasing(GraphicsDeviceManager graphicsDeviceManager, int multisampleCount)
+		{
+			// Verify that the graphics device has not yet been created
+			if (initialized || graphicsDeviceManager.GraphicsDevice != null)
+			{
+				throw new InvalidOperationException("GraphicsDevice already created.  EnableAntialiasing() must be called within the Game class's constructor");
+			}
+
+			// Validate multisample count
+			if (multisampleCount < 1 || multisampleCount > MaxMultisampleCount)
+			{
+				throw new ArgumentException($"Invalid MultisampleCount.  Value must be between 1 and {MaxMultisampleCount}.");
+			}
+
+			// Tell the graphics device manager that we want multisample antialiasing
+			// and save the multisample count for later
+			graphicsDeviceManager.PreferMultiSampling = true;
+			MultisampleCount = multisampleCount;
+
+			// We can't actually set the multisample count until the graphics device
+			// is about to be created, so listen for that event.
+			graphicsDeviceManager.PreparingDeviceSettings += PreparingDeviceSettings;
+		}
+
+
+		/// <summary>
+		/// Event handler for the graphics device manager preparing to create the graphics device
+		/// </summary>
+		private static void PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+		{
+			// Set the multisample count now
+			e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = MultisampleCount;
 		}
 
 
