@@ -23,6 +23,9 @@ ShapeBatch.Begin(GraphicsDevice);
 ShapeBatch.End();
 ```
 
+## Antialiasing Support
+You can enable antialiasing of shapes by calling ```ShapeBatch.EnableAntialiasing(_graphics);``` within your Game class's constructor.  Calling it after the constructor is too late to change the underlying graphics settings and, as such, will throw an exception.
+
 ## Notes
 - This is separate from SpriteBatch and, as such, should not be intermingled with an active SpriteBatch
 - If you need to draw both sprites and shapes, begin and end those batches separately
